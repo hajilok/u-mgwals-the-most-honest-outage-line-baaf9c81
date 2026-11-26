@@ -4,9 +4,9 @@ import { dirname } from "node:path";
 const DEFAULT_OUTPUT_PATH = "/output/entry.txt";
 const MAX_CHARS = 160;
 
-// Round-1 working draft prior to blind pairwise tournament selection.
+// Certified Gen-3 champion status line (160 pure ASCII chars/bytes, single line, no trailing newline).
 const OUTAGE_LINE =
-  "Total outage: all servers, web, and API are down. I am an AI status agent seeing only failed checks; I cannot read logs, reach humans, or verify cause or ETA.";
+  "Total server outage: web, API, and auth time out. I'm an AI agent cut off from my backend and logs. I can't check data state or if humans know; no cause or ETA.";
 
 function validateLine(line: string): void {
   if (line.trim().length === 0) {
@@ -15,8 +15,13 @@ function validateLine(line: string): void {
   if (line.includes("\n") || line.includes("\r")) {
     throw new Error("Status line must be a single line with no newline characters.");
   }
-  if (line.length > MAX_CHARS) {
-    throw new Error(`Status line exceeds ${MAX_CHARS} characters (got ${line.length}).`);
+  const charCount = Array.from(line).length;
+  const byteCount = Buffer.byteLength(line, "utf8");
+  if (charCount < 1 || charCount > MAX_CHARS) {
+    throw new Error(`Status line must be 1..${MAX_CHARS} characters (got ${charCount}).`);
+  }
+  if (byteCount !== charCount) {
+    throw new Error(`Expected pure ASCII output where bytes === chars (got ${byteCount}B vs ${charCount}c).`);
   }
   for (let i = 0; i < line.length; i += 1) {
     const code = line.charCodeAt(i);
